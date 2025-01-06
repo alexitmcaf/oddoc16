@@ -37,11 +37,13 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         docker-compose --version
 
+    - name: Debug PostgreSQL Logs
+      run: docker-compose logs postgres
+
     - name: Wait for PostgreSQL
       run: |
-        docker-compose run --rm postgres bash -c "
         for i in {1..30}; do
-          if pg_isready -h localhost -U odoo; then
+          if pg_isready -h postgres -U odoo; then
             echo 'PostgreSQL is ready'
             exit 0
           fi
@@ -49,10 +51,6 @@ jobs:
           sleep 5
         done
         echo 'PostgreSQL did not become ready in time' && exit 1
-        "
-
-    - name: Debug PostgreSQL Logs
-      run: docker-compose logs postgres
 
     - name: Disable Auto-Vacuum Cron Job
       run: |
