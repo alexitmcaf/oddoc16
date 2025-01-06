@@ -60,7 +60,7 @@ jobs:
 
     - name: Initialize Odoo Database
       run: |
-        docker-compose run --rm odoo odoo -i base --db_host=${HOST} --db_port=5432 --db_user=${USER} --db_password=${PASSWORD} --db_name=${POSTGRES_DB}
+        docker-compose run --rm odoo odoo -i base
 
 
     # Run the update_module_list.py script
