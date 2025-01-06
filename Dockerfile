@@ -3,6 +3,7 @@ FROM odoo:16
 # Copy additional modules and configuration
 COPY ./addons /mnt/extra-addons
 COPY ./etc /etc/odoo
+COPY ./scripts/update_module_list.py /scripts/update_module_list.py
 # COPY ./scripts /scripts
 
 # Make the script executable
