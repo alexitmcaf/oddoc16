@@ -17,11 +17,15 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          # POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
         ports:
           - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U odoo"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
     - name: Checkout Code
@@ -60,7 +64,6 @@ jobs:
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout Code
@@ -74,5 +77,6 @@ jobs:
 
     - name: Build and Push Odoo Image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/odoo:16 .
-        docker push ${{ secrets.DOCKER_USERNAME }}/odoo:16
+        IMAGE_TAG=${{ secrets.DOCKER_USERNAME }}/odoo:16
+        docker build -t $IMAGE_TAG .
+        docker push $IMAGE_TAG
