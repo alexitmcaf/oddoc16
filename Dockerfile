@@ -1,7 +1,7 @@
 FROM odoo:16
 
 # Copy additional modules and configuration
-COPY ./custom-addons /mnt/extra-addons
+COPY ./addons /mnt/extra-addons
 COPY ./config /etc/odoo
 # COPY ./scripts /scripts
 
