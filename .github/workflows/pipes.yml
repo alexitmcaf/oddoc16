@@ -19,6 +19,7 @@ jobs:
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          # POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         ports:
           - 5432:5432
 
@@ -26,57 +27,36 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Debug repository files
+    # Step 2: Debug repository files
     - name: List repository files
       run: ls -la
-
-    # Verify addons directory exists
+    # Step 3: Verify addons directory exists
     - name: Verify addons directory
       run: ls -la ./addons || echo "addons directory not found"
-
-    # Verify odoo.conf file exists
+    # Step 4: Verify odoo.conf file exists
     - name: Verify odoo.conf file
       run: ls -la ./etc/odoo.conf || echo "odoo.conf file not found"
-
-    # Copy addons and config to docker folder (if necessary)
+    # Step 5: Copy addons and config to docker folder (if necessary)
     - name: Copy addons and odoo.conf to docker folder
       run: |
         mkdir -p docker/addons
         mkdir -p docker/etc
         cp -r ./addons/* ./docker/addons/
         cp ./etc/odoo.conf ./docker/etc/odoo.conf
-
-    # Install Docker Compose
     - name: Install Docker Compose
       run: |
         sudo apt-get update
         sudo apt-get install -y docker-compose
-
-    # Set up Docker Compose
     - name: Set up Docker Compose
       run: |
         docker-compose up -d postgres
         sleep 10  # Ensure PostgreSQL is ready
-
-    - name: Initialize Odoo Database
-      run: |
-        docker-compose run --rm odoo odoo -i base
-
-
-    # Run the update_module_list.py script
-    - name: Run update_module_list.py
-      run: |
-        docker-compose run --rm odoo python3 /scripts/update_module_list.py
-
-    # Run Odoo Tests
     - name: Run Odoo Tests
       run: |
         docker-compose up -d odoo
         sleep 10  # Wait for Odoo to start
-        # Run tests if applicable
-        # docker-compose exec odoo /scripts/test.sh
+        # docker exec odoo /scripts/test.sh
         docker-compose down
-
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
