@@ -21,7 +21,11 @@ jobs:
           POSTGRES_PASSWORD: odoo
         ports:
           - 5432:5432
-        # options: --health-cmd "pg_isready -U odoo" --health-interval 10s --health-timeout 5s --health-retries 5
+        options: >-
+          --health-cmd="pg_isready -U odoo"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
     - name: Checkout Code
@@ -38,6 +42,9 @@ jobs:
           sleep 5
         done
         echo "PostgreSQL did not become ready in time" && exit 1
+
+    - name: Debug PostgreSQL Logs
+      run: docker logs $(docker ps -q --filter "name=postgres")
 
     - name: Verify addons directory
       run: |
