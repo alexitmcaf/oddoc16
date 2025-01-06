@@ -26,61 +26,52 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    # Debug repository files
-    - name: List repository files
-      run: ls -la
-
-    # Verify addons directory exists
     - name: Verify addons directory
-      run: ls -la ./addons || echo "addons directory not found"
-
-    # Verify odoo.conf file exists
-    - name: Verify odoo.conf file
-      run: ls -la ./etc/odoo.conf || echo "odoo.conf file not found"
-
-    # Copy addons and config to docker folder (if necessary)
-    - name: Copy addons and odoo.conf to docker folder
       run: |
-        mkdir -p docker/addons
-        mkdir -p docker/etc
-        cp -r ./addons/* ./docker/addons/
-        cp ./etc/odoo.conf ./docker/etc/odoo.conf
+        if [ ! -d "./addons" ]; then
+          echo "addons directory not found" && exit 1
+        fi
 
-    # Install Docker Compose
+    - name: Verify odoo.conf file
+      run: |
+        if [ ! -f "./etc/odoo.conf" ]; then
+          echo "odoo.conf file not found" && exit 1
+        fi
+
     - name: Install Docker Compose
       run: |
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
-    # Set up Docker Compose
-    - name: Set up Docker Compose
+    - name: Wait for PostgreSQL
       run: |
-        docker-compose up -d postgres
-        sleep 10  # Ensure PostgreSQL is ready
+        for i in {1..10}; do
+          if pg_isready -h localhost -p 5432; then
+            echo "PostgreSQL is ready"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "PostgreSQL did not become ready in time" && exit 1
+      env:
+        PGUSER: ${{ secrets.POSTGRES_USER }}
+        PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
 
     - name: Initialize Odoo Database
       run: |
-        docker-compose run --rm odoo odoo -i base
+        docker-compose run --rm odoo odoo -i base --load=web --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
 
-
-    # Run the update_module_list.py script
-    - name: Run update_module_list.py
-      run: |
-        docker-compose run --rm odoo python3 /scripts/update_module_list.py
-
-    # Run Odoo Tests
     - name: Run Odoo Tests
       run: |
-        docker-compose up -d odoo
-        sleep 10  # Wait for Odoo to start
-        # Run tests if applicable
-        # docker-compose exec odoo /scripts/test.sh
-        docker-compose down
+        docker-compose run --rm odoo odoo --test-enable --init=all
+
+    - name: Teardown
+      if: always()
+      run: docker-compose down
 
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    # if: github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout Code
@@ -94,5 +85,6 @@ jobs:
 
     - name: Build and Push Odoo Image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/odoo:16 .
-        docker push ${{ secrets.DOCKER_USERNAME }}/odoo:16
+        IMAGE_TAG=${{ secrets.DOCKER_USERNAME }}/odoo:16
+        docker build -t $IMAGE_TAG .
+        docker push $IMAGE_TAG
