@@ -19,7 +19,6 @@ jobs:
         env:
           POSTGRES_USER: odoo
           POSTGRES_PASSWORD: odoo
-          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -38,9 +37,6 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         docker-compose --version
 
-    - name: Debug PostgreSQL Logs
-      run: docker-compose logs postgres
-
     - name: Wait for PostgreSQL Readiness
       run: |
         for i in {1..30}; do
@@ -55,12 +51,12 @@ jobs:
 
     - name: Disable Auto-Vacuum Cron Job
       run: |
-        docker-compose run --rm postgres psql -h postgres -U odoo -c \
+        docker exec $(docker ps -q --filter "name=postgres") psql -h localhost -U odoo -c \
           "UPDATE ir_cron SET active = FALSE WHERE name = 'Base: Auto-vacuum internal data';"
 
     - name: Disable All Cron Jobs
       run: |
-        docker-compose run --rm postgres psql -h postgres -U odoo -c \
+        docker exec $(docker ps -q --filter "name=postgres") psql -h localhost -U odoo -c \
           "UPDATE ir_cron SET active = FALSE WHERE active IS TRUE;"
 
     - name: Initialize Odoo Database
