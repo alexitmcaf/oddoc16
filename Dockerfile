@@ -2,7 +2,7 @@ FROM odoo:16
 
 # Copy additional modules and configuration
 COPY ./addons /mnt/extra-addons
-COPY ./config /etc/odoo
+COPY ./etc /etc/odoo
 # COPY ./scripts /scripts
 
 # Make the script executable
