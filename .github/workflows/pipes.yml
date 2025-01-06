@@ -37,32 +37,31 @@ jobs:
         sudo chmod +x /usr/local/bin/docker-compose
         docker-compose --version
 
-    - name: Verify Docker Installation
-      run: docker --version
-
-    - name: List Running Containers
-      run: docker ps -a
-
-    - name: Wait for PostgreSQL Logs
+    - name: Wait for PostgreSQL
       run: |
+        docker-compose run --rm postgres bash -c "
         for i in {1..30}; do
-          if docker logs $(docker ps -q --filter "name=postgres") | grep "database system is ready to accept connections"; then
-            echo "PostgreSQL is ready"
+          if pg_isready -h localhost -U odoo; then
+            echo 'PostgreSQL is ready'
             exit 0
           fi
-          echo "Waiting for PostgreSQL..."
+          echo 'Waiting for PostgreSQL...'
           sleep 5
         done
-        echo "PostgreSQL did not become ready in time" && exit 1
+        echo 'PostgreSQL did not become ready in time' && exit 1
+        "
+
+    - name: Debug PostgreSQL Logs
+      run: docker-compose logs postgres
 
     - name: Disable Auto-Vacuum Cron Job
       run: |
-        docker-compose run --rm postgres psql -U odoo -c \
+        docker-compose run --rm postgres psql -h postgres -U odoo -c \
           "UPDATE ir_cron SET active = FALSE WHERE name = 'Base: Auto-vacuum internal data';"
 
     - name: Disable All Cron Jobs
       run: |
-        docker-compose run --rm postgres psql -U odoo -c \
+        docker-compose run --rm postgres psql -h postgres -U odoo -c \
           "UPDATE ir_cron SET active = FALSE WHERE active IS TRUE;"
 
     - name: Initialize Odoo Database
@@ -76,3 +75,23 @@ jobs:
     - name: Teardown
       if: always()
       run: docker-compose down
+
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Odoo Image
+      run: |
+        IMAGE_TAG=${{ secrets.DOCKER_USERNAME }}/odoo:16
+        docker build -t $IMAGE_TAG .
+        docker push $IMAGE_TAG
