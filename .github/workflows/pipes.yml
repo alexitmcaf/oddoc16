@@ -51,7 +51,7 @@ jobs:
 
     - name: Initialize Odoo Database
       run: |
-        docker-compose run --rm odoo odoo -i base --no-cron --load=web --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+        docker-compose run --rm odoo odoo -i base --load=web --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
 
     - name: Disable Auto-Vacuum Cron Job
       run: |
