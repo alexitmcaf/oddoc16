@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+  postgres:
+    image: postgres:15
+    container_name: psql
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data/pgdata
+    networks:
+      - odoo_network
+
+  odoo:
+    image: odoo:16
+    container_name: odoo
+    depends_on:
+      - postgres
+    env_file: .env
+    ports:
+      - "8069:8069"
+    volumes:
+      - ./addons:/mnt/extra-addons
+      - ./etc:/etc/odoo
+      - ./scripts:/scripts
+    networks:
+      - odoo_network
+
+volumes:
+  pgdata:
+
+networks:
+  odoo_network:
