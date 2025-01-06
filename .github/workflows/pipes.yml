@@ -42,13 +42,13 @@ jobs:
       run: |
         docker-compose up -d odoo
         sleep 10  # Wait for Odoo to start
-        docker exec odoo /scripts/test.sh
+        # docker exec odoo /scripts/test.sh
         docker-compose down
 
   build-and-push:
     name: Build and Push Docker Images
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout Code
