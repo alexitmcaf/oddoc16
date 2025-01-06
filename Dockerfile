@@ -5,7 +5,7 @@ COPY ./addons /mnt/extra-addons
 COPY ./etc /etc/odoo
 COPY ./scripts/update_module_list.py /scripts/update_module_list.py
 # COPY ./scripts /scripts
-
+# ENV ODOO_CONF=/etc/odoo/odoo.conf
 # Make the script executable
 # RUN chmod +x /scripts/test.sh
 
