@@ -27,6 +27,26 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
+    # Step 2: Debug repository files
+    - name: List repository files
+      run: ls -la
+
+    # Step 3: Verify addons directory exists
+    - name: Verify addons directory
+      run: ls -la ./addons || echo "addons directory not found"
+
+    # Step 4: Verify odoo.conf file exists
+    - name: Verify odoo.conf file
+      run: ls -la ./etc/odoo.conf || echo "odoo.conf file not found"
+
+    # Step 5: Copy addons and config to docker folder (if necessary)
+    - name: Copy addons and odoo.conf to docker folder
+      run: |
+        mkdir -p docker/addons
+        mkdir -p docker/etc
+        cp -r ./addons/* ./docker/addons/
+        cp ./etc/odoo.conf ./docker/etc/odoo.conf
+
     - name: Install Docker Compose
       run: |
         sudo apt-get update

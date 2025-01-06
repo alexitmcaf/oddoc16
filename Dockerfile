@@ -10,5 +10,6 @@ COPY ./config /etc/odoo
 
 # Optional: Install additional Python dependencies
 # RUN pip install -r /mnt/extra-addons/requirements.txt
+EXPOSE 8069
 
 CMD ["odoo"]
