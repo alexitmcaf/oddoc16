@@ -63,23 +63,19 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
 
-    - name: Wait for PostgreSQL
+    - name: Disable Auto-Vacuum Cron Job
       run: |
-        for i in {1..10}; do
-          if pg_isready -h localhost -p 5432; then
-            echo "PostgreSQL is ready"
-            exit 0
-          fi
-          sleep 2
-        done
-        echo "PostgreSQL did not become ready in time" && exit 1
-      env:
-        PGUSER: ${{ secrets.POSTGRES_USER }}
-        PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        docker-compose exec postgres psql -U odoo -c \
+          "UPDATE ir_cron SET active = FALSE WHERE name = 'Base: Auto-vacuum internal data';"
+
+    - name: Disable All Cron Jobs
+      run: |
+        docker-compose exec postgres psql -U odoo -c \
+          "UPDATE ir_cron SET active = FALSE WHERE active IS TRUE;"
 
     - name: Initialize Odoo Database
       run: |
-        docker-compose run --rm odoo odoo -i base --load=web --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+        docker-compose run --rm odoo odoo -i base --no-cron --load=web --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
 
     - name: Run Odoo Tests
       run: |
