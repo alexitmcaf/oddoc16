@@ -49,6 +49,10 @@ jobs:
         done
         echo 'PostgreSQL did not become ready in time' && exit 1
 
+    - name: Initialize Odoo Database
+      run: |
+        docker-compose run --rm odoo odoo -i base --no-cron --load=web --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+
     - name: Disable Auto-Vacuum Cron Job
       run: |
         docker exec $(docker ps -q --filter "name=postgres") psql -h localhost -U odoo -c \
@@ -58,10 +62,6 @@ jobs:
       run: |
         docker exec $(docker ps -q --filter "name=postgres") psql -h localhost -U odoo -c \
           "UPDATE ir_cron SET active = FALSE WHERE active IS TRUE;"
-
-    - name: Initialize Odoo Database
-      run: |
-        docker-compose run --rm odoo odoo -i base --no-cron --load=web --addons-path=/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
 
     - name: Run Odoo Tests
       run: |
