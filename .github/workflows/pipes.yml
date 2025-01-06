@@ -19,13 +19,19 @@ jobs:
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          # POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         ports:
           - 5432:5432
 
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
+
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+
 
     - name: Set up Docker Compose
       run: |
