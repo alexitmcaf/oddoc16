@@ -38,6 +38,7 @@ jobs:
           sleep 5
         done
         echo "PostgreSQL did not become ready in time" && exit 1
+        
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
