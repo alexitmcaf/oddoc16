@@ -31,11 +31,17 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
+    - name: Install Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        docker-compose --version
+
+    - name: Verify Docker Installation
+      run: docker --version
+
     - name: List Running Containers
       run: docker ps -a
-
-    - name: List Docker Networks
-      run: docker network ls
 
     - name: Wait for PostgreSQL Logs
       run: |
@@ -70,23 +76,3 @@ jobs:
     - name: Teardown
       if: always()
       run: docker-compose down
-
-  build-and-push:
-    name: Build and Push Docker Images
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and Push Odoo Image
-      run: |
-        IMAGE_TAG=${{ secrets.DOCKER_USERNAME }}/odoo:16
-        docker build -t $IMAGE_TAG .
-        docker push $IMAGE_TAG
