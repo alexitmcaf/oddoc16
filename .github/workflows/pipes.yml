@@ -31,46 +31,32 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Wait for PostgreSQL
+    - name: List Running Containers
+      run: docker ps -a
+
+    - name: List Docker Networks
+      run: docker network ls
+
+    - name: Wait for PostgreSQL Logs
       run: |
         for i in {1..30}; do
-          if pg_isready -h 127.0.0.1 -p 5432; then
+          if docker logs $(docker ps -q --filter "name=postgres") | grep "database system is ready to accept connections"; then
             echo "PostgreSQL is ready"
             exit 0
           fi
           echo "Waiting for PostgreSQL..."
-          sleep 10
+          sleep 5
         done
         echo "PostgreSQL did not become ready in time" && exit 1
 
-    - name: Debug PostgreSQL Logs
-      run: docker logs $(docker ps -q --filter "name=postgres")
-
-    - name: Verify addons directory
-      run: |
-        if [ ! -d "./addons" ]; then
-          echo "addons directory not found" && exit 1
-        fi
-
-    - name: Verify odoo.conf file
-      run: |
-        if [ ! -f "./etc/odoo.conf" ]; then
-          echo "odoo.conf file not found" && exit 1
-        fi
-
-    - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
-
     - name: Disable Auto-Vacuum Cron Job
       run: |
-        docker-compose exec postgres psql -U odoo -c \
+        docker-compose run --rm postgres psql -U odoo -c \
           "UPDATE ir_cron SET active = FALSE WHERE name = 'Base: Auto-vacuum internal data';"
 
     - name: Disable All Cron Jobs
       run: |
-        docker-compose exec postgres psql -U odoo -c \
+        docker-compose run --rm postgres psql -U odoo -c \
           "UPDATE ir_cron SET active = FALSE WHERE active IS TRUE;"
 
     - name: Initialize Odoo Database
