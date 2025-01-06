@@ -58,6 +58,11 @@ jobs:
         docker-compose up -d postgres
         sleep 10  # Ensure PostgreSQL is ready
 
+    - name: Initialize Odoo Database
+      run: |
+        docker-compose run --rm odoo odoo -i base --db_host=${HOST} --db_port=5432 --db_user=${USER} --db_password=${PASSWORD} --db_name=${POSTGRES_DB}
+
+
     # Run the update_module_list.py script
     - name: Run update_module_list.py
       run: |
