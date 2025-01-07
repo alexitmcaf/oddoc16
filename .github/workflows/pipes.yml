@@ -1,82 +1,41 @@
-name: Odoo CI/CD
+name: Build and Push Docker Image
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main  # Trigger workflow on pushes to the main branch
 
 jobs:
-  test:
-    name: Test Odoo Application
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: odoo
-          POSTGRES_PASSWORD: odoo
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U odoo"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    # Step 2: Debug repository files
-    - name: List repository files
-      run: ls -la
-    # Step 3: Verify addons directory exists
-    - name: Verify addons directory
-      run: ls -la ./addons || echo "addons directory not found"
-    # Step 4: Verify odoo.conf file exists
-    - name: Verify odoo.conf file
-      run: ls -la ./etc/odoo.conf || echo "odoo.conf file not found"
-    # Step 5: Copy addons and config to docker folder (if necessary)
-    - name: Copy addons and odoo.conf to docker folder
-      run: |
-        mkdir -p docker/addons
-        mkdir -p docker/etc
-        cp -r ./addons/* ./docker/addons/
-        cp ./etc/odoo.conf ./docker/etc/odoo.conf
-    - name: Install Docker Compose
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y docker-compose
-    - name: Set up Docker Compose
-      run: |
-        docker-compose up -d postgres
-        sleep 10  # Ensure PostgreSQL is ready
-    - name: Run Odoo Tests
-      run: |
-        docker-compose up -d odoo
-        sleep 10  # Wait for Odoo to start
-        # docker exec odoo /scripts/test.sh
-        docker-compose down
   build-and-push:
-    name: Build and Push Docker Images
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      # Step 2: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and Push Odoo Image
-      run: |
-        IMAGE_TAG=${{ secrets.DOCKER_USERNAME }}/odoo:16
-        docker build -t $IMAGE_TAG .
-        docker push $IMAGE_TAG
+      # Step 3: Set up Docker Buildx (optional for multi-platform builds)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 4: Build and push the Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
+
+      # Step 5: (Optional) Verify the image
+      - name: Verify Docker image
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
+          docker run --rm -d -p 8069:8069 ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
