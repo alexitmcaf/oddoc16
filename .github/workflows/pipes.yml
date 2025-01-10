@@ -22,13 +22,21 @@ jobs:
 
       # Step 3: Verify addons directory exists
       - name: Verify addons directory
-        run: ls -la ./addons || echo "addons directory not found"
+        run: |
+          if [ -d "./addons" ]; then
+            echo "Addons directory found"
+            ls -la ./addons
+          else
+            echo "Addons directory not found"
+            exit 1
+          fi
 
       # Step 4: Copy addons and config to docker folder (if necessary)
       - name: Copy addons and odoo.conf to docker folder
         run: |
           mkdir -p docker/addons
           cp -r ./addons/* ./docker/addons/
+          ls -la docker/addons  # Debug copied files
 
       # Step 5: Log in to Docker Hub
       - name: Log in to Docker Hub
@@ -50,8 +58,13 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
 
-      # Step 8: (Optional) Verify the image
-      - name: Verify Docker image
+      # Step 8: Verify addons in the Docker image
+      - name: Debug addons in Docker image
         run: |
           docker pull ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
+          docker run --rm -it ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest ls -la /mnt/extra-addons
+
+      # Step 9: Verify the image (optional)
+      - name: Run Docker image for verification
+        run: |
           docker run --rm -d -p 8069:8069 ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
