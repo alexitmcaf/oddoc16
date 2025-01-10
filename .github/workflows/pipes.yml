@@ -30,13 +30,18 @@ jobs:
             echo "Addons directory not found"
             exit 1
           fi
+      
+      # Step 4: Verify odoo.conf file exists
+      - name: Verify odoo.conf file
+        run: ls -la ./etc/odoo.conf || echo "odoo.conf file not found"
 
       # Step 4: Copy addons and config to docker folder (if necessary)
       - name: Copy addons and odoo.conf to docker folder
         run: |
           mkdir -p docker/addons
+          mkdir -p docker/etc
           cp -r ./addons/* ./docker/addons/
-          ls -la docker/addons  # Debug copied files
+          cp ./etc/odoo.conf ./docker/etc/odoo.conf
 
       # Step 5: Log in to Docker Hub
       - name: Log in to Docker Hub
