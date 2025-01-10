@@ -1,5 +1,8 @@
 FROM odoo:16
 
+USER root
+
+RUN mkdir -p /mnt/extra-addons && chown -R odoo:odoo /mnt/extra-addons
 # Copy additional modules and configuration
 COPY ./addons /mnt/extra-addons
 COPY ./etc /etc/odoo
@@ -13,5 +16,7 @@ COPY ./etc /etc/odoo
 # Optional: Install additional Python dependencies
 # RUN pip install -r /mnt/extra-addons/requirements.txt
 EXPOSE 8069
+
+USER odoo
 
 CMD ["odoo"]
