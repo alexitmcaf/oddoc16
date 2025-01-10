@@ -62,7 +62,7 @@ jobs:
       - name: Debug addons in Docker image
         run: |
           docker pull ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
-          docker run --rm -it ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest ls -la /mnt/extra-addons
+          docker run --rm ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest ls -la /mnt/extra-addons
 
       # Step 9: Verify the image (optional)
       - name: Run Docker image for verification
