@@ -38,10 +38,12 @@ jobs:
       # Step 5: Prepare volume directories on the host machine
       - name: Create directories for Docker volumes
         run: |
-          mkdir -p /home/oddoc/odoo/pgdata
-          mkdir -p /home/oddoc/odoo/odoo_data
+          sudo mkdir -p /home/oddoc/odoo/pgdata
+          sudo mkdir -p /home/oddoc/odoo/odoo_data
+          sudo chown -R $USER:$USER /home/oddoc/odoo
           echo "Volume directories created successfully"
           ls -la /home/oddoc/odoo
+        shell: /bin/bash
 
       # Step 6: Copy addons and config to docker folder (if necessary)
       - name: Copy addons and odoo.conf to docker folder
