@@ -16,21 +16,20 @@ RUN mkdir -p /mnt/extra-addons \
 COPY ./addons /mnt/extra-addons
 COPY ./etc /etc/odoo
 
-# Uncomment if scripts and additional dependencies are needed
-# COPY ./scripts/update_module_list.py /scripts/update_module_list.py
-# COPY ./scripts /scripts
-# ENV ODOO_CONF=/etc/odoo/odoo.conf
-# Make the script executable
-# RUN chmod +x /scripts/test.sh
+# Copy the startup script
+COPY ./startup.sh /usr/local/bin/startup.sh
 
-# Optional: Install additional Python dependencies
-# RUN pip install -r /mnt/extra-addons/requirements.txt
+# Make the startup script executable
+RUN chmod +x /usr/local/bin/startup.sh
 
 # Expose the Odoo default port
 EXPOSE 8069
 
 # Switch to odoo user
 USER odoo
+
+# Set the ENTRYPOINT to use the startup script
+ENTRYPOINT ["/usr/local/bin/startup.sh"]
 
 # Set the CMD with conditional logic for modules
 CMD bash -c "\
