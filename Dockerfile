@@ -27,9 +27,9 @@ USER odoo
 
 # Set the CMD with conditional logic for modules
 CMD bash -c "\
-addons=$(ls /mnt/extra-addons); \
+addons=$(ls -1 /mnt/extra-addons | tr '\n' ',' | sed 's/,$//'); \
 if [ -n \"$addons\" ]; then \
-  odoo --config=/etc/odoo/odoo.conf -u $addons; \
+  odoo --config=/etc/odoo/odoo.conf -u \"$addons\"; \
 else \
   odoo --config=/etc/odoo/odoo.conf; \
 fi"
