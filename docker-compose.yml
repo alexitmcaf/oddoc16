@@ -4,8 +4,6 @@ services:
     image: postgres:15
     container_name: psql
     env_file: .env
-    volumes:
-      - pgdata:/var/lib/postgresql/data/pgdata
     networks:
       - odoo_network
 
