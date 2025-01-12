@@ -2,8 +2,15 @@ FROM odoo:16
 
 USER root
 
-# Create a directory for additional modules and set permissions
-RUN mkdir -p /mnt/extra-addons && chown -R odoo:odoo /mnt/extra-addons
+# Create directories for additional modules, configuration, and volumes
+RUN mkdir -p /mnt/extra-addons \
+    && mkdir -p /var/lib/postgresql/data/pgdata \
+    && mkdir -p /var/lib/odoo \
+    && mkdir -p /etc/odoo \
+    && chown -R odoo:odoo /mnt/extra-addons \
+    && chown -R odoo:odoo /var/lib/postgresql/data/pgdata \
+    && chown -R odoo:odoo /var/lib/odoo \
+    && chown -R odoo:odoo /etc/odoo
 
 # Copy additional modules and configuration
 COPY ./addons /mnt/extra-addons
