@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main  # Trigger workflow on pushes to the main branch
+      - main
 
 jobs:
   build-and-push:
@@ -20,51 +20,21 @@ jobs:
       - name: List repository files
         run: ls -la
 
-      # Step 3: Verify addons directory exists
-      - name: Verify addons directory
+      # Step 3: Verify required directories and files
+      - name: Verify addons and config files
         run: |
-          if [ -d "./addons" ]; then
-            echo "Addons directory found"
-            ls -la ./addons
-          else
-            echo "Addons directory not found"
-            exit 1
-          fi
-      
-      # Step 4: Verify odoo.conf file exists
-      - name: Verify odoo.conf file
-        run: ls -la ./etc/odoo.conf || echo "odoo.conf file not found"
+          test -d ./addons || { echo "Addons directory not found"; exit 1; }
+          test -f ./etc/odoo.conf || { echo "odoo.conf file not found"; exit 1; }
+          echo "Addons and config files verified"
 
-      # Step 5: Prepare volume directories on the host machine
-      - name: Create directories for Docker volumes
-        run: |
-          sudo mkdir -p /home/oddoc/odoo/pgdata
-          sudo mkdir -p /home/oddoc/odoo/odoo_data
-          sudo chown -R $USER:$USER /home/oddoc/odoo
-          echo "Volume directories created successfully"
-          ls -la /home/oddoc/odoo
-        shell: bash
-
-      # Step 6: Copy addons and config to docker folder (if necessary)
-      - name: Copy addons and odoo.conf to docker folder
-        run: |
-          mkdir -p docker/addons
-          mkdir -p docker/etc
-          cp -r ./addons/* ./docker/addons/
-          cp ./etc/odoo.conf ./docker/etc/odoo.conf
-
-      # Step 7: Log in to Docker Hub
+      # Step 4: Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 8: Set up Docker Buildx (optional for multi-platform builds)
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      # Step 9: Build and push the Docker image
+      # Step 5: Build and push the Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
@@ -73,16 +43,11 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
 
-      # Step 10: Verify addons in the Docker image
-      - name: Debug addons in Docker image
+      # Step 6: Verify the Docker image
+      - name: Test the Docker image
         run: |
           docker pull ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
-          docker run --rm ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest ls -la /mnt/extra-addons
-
-      # Step 11: Verify the image (optional)
-      - name: Run Docker image for verification
-        run: |
-          docker run --rm -d -p 8069:8069 \
-            -v /home/oddoc/odoo/pgdata:/var/lib/postgresql/data/pgdata \
+          docker run --rm \
+            -v /home/oddoc/odoo/pgdata:/var/lib/postgresql/data \
             -v /home/oddoc/odoo/odoo_data:/var/lib/odoo \
-            ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
+            ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest ls -la /mnt/extra-addons

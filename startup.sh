@@ -1,7 +1,11 @@
 #!/bin/bash
 
-# Fix permissions for PostgreSQL data directory
-chown -R odoo:odoo /var/lib/postgresql/data/pgdata
+# Collect all addon names
+addons=$(ls -1 /mnt/extra-addons | tr '\n' ',' | sed 's/,$//')
 
-# Execute the provided command (CMD or arguments)
-exec "$@"
+# Run Odoo with or without addons
+if [ -n "$addons" ]; then
+  exec odoo --config=/etc/odoo/odoo.conf -u "$addons"
+else
+  exec odoo --config=/etc/odoo/odoo.conf
+fi
