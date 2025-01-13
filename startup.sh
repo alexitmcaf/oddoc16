@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Remove cache to reflect updated addons
+rm -rf /var/lib/odoo/.local/share/Odoo/*
+
 # Collect all addon names
 addons=$(ls -1 /mnt/extra-addons | tr '\n' ',' | sed 's/,$//')
 
