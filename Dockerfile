@@ -14,7 +14,7 @@ RUN mkdir -p /mnt/extra-addons \
 
 # Copy additional modules and configuration
 COPY ./addons /mnt/extra-addons
-COPY ./etc/odoo.conf /etc/odoo/odoo.conf
+COPY ./etc /etc/odoo
 COPY ./startup.sh /usr/local/bin/startup.sh
 
 # Make the startup script executable
