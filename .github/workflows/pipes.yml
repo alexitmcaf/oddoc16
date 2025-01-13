@@ -43,12 +43,6 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
 
-      # Step 10: Verify addons in the Docker image
-      - name: Debug addons in Docker image
-        run: |
-          docker pull ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
-          docker run --rm ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest ls -la /mnt/extra-addons
-
       # Step 11: Verify the image (optional)
       - name: Run Docker image for verification
         run: |
