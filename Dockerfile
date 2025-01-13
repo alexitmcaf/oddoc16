@@ -18,7 +18,7 @@ COPY ./etc /etc/odoo
 # COPY ./startup.sh /usr/local/bin/startup.sh
 
 # Make the startup script executable
-RUN chmod +x /usr/local/bin/startup.sh
+# RUN chmod +x /usr/local/bin/startup.sh
 
 # Switch to odoo user
 USER odoo
