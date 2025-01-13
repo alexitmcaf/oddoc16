@@ -43,11 +43,10 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
 
-      # Step 6: Verify the Docker image
-      - name: Test the Docker image
+      # Step 11: Verify the image (optional)
+      - name: Run Docker image for verification
         run: |
-          docker pull ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
-          docker run --rm \
-            -v /home/oddoc/odoo/pgdata:/var/lib/postgresql/data \
+          docker run --rm -d -p 8069:8069 \
+            -v /home/oddoc/odoo/pgdata:/var/lib/postgresql/data/pgdata \
             -v /home/oddoc/odoo/odoo_data:/var/lib/odoo \
-            ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest ls -la /mnt/extra-addons
+            ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
