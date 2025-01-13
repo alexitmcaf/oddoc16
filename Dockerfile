@@ -15,7 +15,7 @@ RUN mkdir -p /mnt/extra-addons \
 # Copy additional modules and configuration
 COPY ./addons /mnt/extra-addons
 COPY ./etc /etc/odoo
-COPY ./startup.sh /usr/local/bin/startup.sh
+# COPY ./startup.sh /usr/local/bin/startup.sh
 
 # Make the startup script executable
 RUN chmod +x /usr/local/bin/startup.sh
@@ -23,5 +23,11 @@ RUN chmod +x /usr/local/bin/startup.sh
 # Switch to odoo user
 USER odoo
 
-# Set the startup script as the entrypoint
-ENTRYPOINT ["/usr/local/bin/startup.sh"]
+# Set the CMD with conditional logic for modules
+CMD bash -c "\
+addons=$(ls -1 /mnt/extra-addons | tr '\n' ',' | sed 's/,$//'); \
+if [ -n \"$addons\" ]; then \
+  odoo --config=/etc/odoo/odoo.conf -u \"$addons\"; \
+else \
+  odoo --config=/etc/odoo/odoo.conf; \
+fi"
