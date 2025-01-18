@@ -43,6 +43,12 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/odoo16-custom:latest
 
+  # Step 7: Execute the module update script inside the container
+      - name: Run module update script
+        run: |
+          docker exec odoo-test bash -c "python3 /scripts/update_module_list.py"
+          echo "Module update script executed successfully"
+
       # Step 11: Verify the image (optional)
       - name: Run Docker image for verification
         run: |
