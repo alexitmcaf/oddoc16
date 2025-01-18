@@ -20,7 +20,9 @@ services:
       - ./scripts:/scripts
     entrypoint: >
       bash -c "
-      /scripts/python3 /scripts/update_module_list.py"
+      echo 'Running module update script...'; 
+      /scripts/python3 /scripts/update_module_list.py;
+      echo 'Module update script completed!'"
     networks:
       - odoo_network
 
