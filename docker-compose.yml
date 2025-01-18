@@ -18,6 +18,9 @@ services:
     volumes:
       - ./etc:/etc/odoo
       - ./scripts:/scripts
+    entrypoint: >
+      bash -c "
+      /scripts/python3 /scripts/update_module_list.py"
     networks:
       - odoo_network
 
