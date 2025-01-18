@@ -24,10 +24,11 @@ COPY ./etc /etc/odoo
 USER odoo
 
 # Set the CMD with conditional logic for modules
-CMD bash -c "\
-addons=$(ls -1 /mnt/extra-addons | tr '\n' ',' | sed 's/,$//'); \
-if [ -n \"$addons\" ]; then \
-  odoo --config=/etc/odoo/odoo.conf -u \"$addons\"; \
-else \
-  odoo --config=/etc/odoo/odoo.conf; \
-fi"
+# CMD bash -c "\
+# addons=$(ls -1 /mnt/extra-addons | tr '\n' ',' | sed 's/,$//'); \
+# if [ -n \"$addons\" ]; then \
+#   odoo --config=/etc/odoo/odoo.conf -u \"$addons\"; \
+# else \
+#   odoo --config=/etc/odoo/odoo.conf; \
+# fi"
+CMD ["odoo"]
